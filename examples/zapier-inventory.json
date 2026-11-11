@@ -1,0 +1,20 @@
+{
+  "format": "zapier-inventory-v1",
+  "steps": [
+    {"id": "101", "kind": "trigger", "app": "Typeform", "event": "New Entry"},
+    {
+      "id": "102",
+      "kind": "filter",
+      "app": "Filter by Zapier",
+      "event": "Only continue if",
+      "fields": {"source": "{{101__score}}", "operator": "greater than", "threshold": 50}
+    },
+    {
+      "id": "103",
+      "kind": "action",
+      "app": "Google Sheets",
+      "event": "Create Spreadsheet Row",
+      "fields": {"email": "{{101__email}}", "source": "demo"}
+    }
+  ]
+}
