@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="title desc">
+  <title id="title">Migrate to n8n — From Make &amp; Zapier</title>
+  <desc id="desc">Minimalist monochrome n8n migration banner with modern typography and a simple workflow icon.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#09090a"/>
+      <stop offset="0.58" stop-color="#080809"/>
+      <stop offset="1" stop-color="#161618"/>
+    </linearGradient>
+    <linearGradient id="arcTop" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".52"/>
+      <stop offset=".54" stop-color="#c4c4c7" stop-opacity=".13"/>
+      <stop offset="1" stop-color="#c4c4c7" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="arcBottom" x1="1" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity=".35"/>
+      <stop offset=".56" stop-color="#a0a0a5" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b3b3e"/>
+      <stop offset=".42" stop-color="#19191b"/>
+      <stop offset="1" stop-color="#101011"/>
+    </linearGradient>
+    <linearGradient id="outline" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fafafa" stop-opacity=".83"/>
+      <stop offset=".48" stop-color="#eee" stop-opacity=".17"/>
+      <stop offset="1" stop-color="#aaa" stop-opacity=".28"/>
+    </linearGradient>
+    <linearGradient id="heading" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="1" stop-color="#dadade"/>
+    </linearGradient>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="16"/>
+    </filter>
+    <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+    <clipPath id="frame"><rect width="1200" height="300"/></clipPath>
+  </defs>
+  <g clip-path="url(#frame)">
+    <rect width="1200" height="300" fill="url(#bg)"/>
+    <!-- Restrained dimensional monochrome arcs -->
+    <path d="M-85 -100 H515 C340 28 175 108 -95 119Z" fill="url(#arcTop)" opacity=".66"/>
+    <path d="M-60 122 C160 105 330 45 502 -90" fill="none" stroke="#fff" stroke-opacity=".36" stroke-width="13" filter="url(#blur)"/>
+    <path d="M1238 170 C1016 178 933 240 836 350 L1250 350Z" fill="url(#arcBottom)" opacity=".8"/>
+    <path d="M1294 165 C1077 181 946 230 843 344" fill="none" stroke="#eee" stroke-opacity=".23" stroke-width="14" filter="url(#blur)"/>
+    <!-- One understated workflow icon -->
+    <g transform="translate(554 30)">
+      <rect x="-3" y="-3" width="98" height="79" rx="26" fill="#fff" opacity=".12" filter="url(#softGlow)"/>
+      <rect width="92" height="73" rx="23" fill="url(#tile)" stroke="url(#outline)" stroke-width="1"/>
+      <g fill="none" stroke="#f0f0f2" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="25" cy="37" r="5.2"/>
+        <path d="M32.5 37H48m-4-4 4 4-4 4"/>
+        <path d="M54 37h6.5M60.5 37 69 28M60.5 37 69 46"/>
+        <circle cx="72" cy="25" r="4.7"/>
+        <circle cx="72" cy="49" r="4.7"/>
+      </g>
+    </g>
+    <!-- Editable live text, Inter Display with system fallbacks -->
+    <text x="386" y="183" fill="url(#heading)" font-family="Inter Display, Inter, Helvetica Neue, Arial, sans-serif" font-size="72" font-weight="600" letter-spacing="-3.3">Migrate to</text>
+    <text x="720" y="183" fill="#b9b9bf" font-family="Inter Display, Inter, Helvetica Neue, Arial, sans-serif" font-size="72" font-weight="600" letter-spacing="-3.3">n8n</text>
+    <text x="600" y="231" text-anchor="middle" fill="#b5b5bb" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="25" font-weight="400" letter-spacing="2.1">From Make &amp; Zapier</text>
+  </g>
+</svg>
