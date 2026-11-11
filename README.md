@@ -1,10 +1,6 @@
 <div align="center">
 
-<img src="./assets/n8n-migration-banner.svg" alt="n8n Migration Tool banner" width="1200">
-
-# n8n Migration Tool
-
-**Turn a Make blueprint or a Zapier workflow inventory into an n8n draft and a field-by-field migration report.**
+<h1><img src="./assets/n8n-migration-banner.svg" alt="n8n Migration Tool. Turn a Make blueprint or a Zapier workflow inventory into an n8n draft and a field-by-field migration report." width="1200"></h1>
 
 [![Draft workflow output](https://img.shields.io/badge/Output-Inactive%20draft-6366f1?style=for-the-badge&labelColor=18181b&logo=n8n&logoColor=white)](#-usage)
 [![MIT License](https://img.shields.io/badge/License-MIT-6366f1?style=for-the-badge&labelColor=18181b)](./LICENSE)
