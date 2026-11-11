@@ -1,5 +1,5 @@
 {
-  "name": "Demo · Lead-Verteilung",
+  "name": "Demo · Lead Routing",
   "flow": [
     {
       "id": 1,
@@ -17,7 +17,7 @@
               "id": 3,
               "module": "http:ActionSendData",
               "filter": {
-                "name": "Nur qualifizierte Leads",
+                "name": "Qualified leads only",
                 "conditions": [[{"a": "{{1.score}}", "o": "number:greater", "b": "50"}]]
               },
               "mapper": {
@@ -27,7 +27,7 @@
                 "data": "{{1.email}}"
               },
               "onerror": [
-                {"id": 4, "module": "slack:CreateMessage", "mapper": {"text": "Demo-Fehler"}}
+                {"id": 4, "module": "slack:CreateMessage", "mapper": {"text": "Demo error"}}
               ]
             }
           ]

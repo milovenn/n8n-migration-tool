@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Make-Blueprint oder Zapier-Inventar in einen n8n-Entwurf überführen."""
+"""Build an n8n workflow draft from a Make blueprint or a Zapier inventory."""
 
 import argparse
 import json
@@ -35,25 +35,25 @@ REFERENCES = {
     "make": re.compile(r"\{\{\s*([0-9]+)\."),
     "zapier": re.compile(r"\{\{\s*([0-9]+)__"),
 }
-START_NODE = "Manueller Start (Entwurf)"
-DRAFT_WARNING = "Migrationsentwurf: Diesen Platzhalter vor der Nutzung ersetzen."
+START_NODE = "Manual Trigger (Draft)"
+DRAFT_WARNING = "Replace this migration placeholder before running the workflow."
 
 
 def require_object(value, path):
     if not isinstance(value, dict):
-        raise ValueError(f"{path}: JSON-Objekt erwartet.")
+        raise ValueError(f"{path}: Expected a JSON object.")
     return value
 
 
 def require_list(value, path):
     if not isinstance(value, list):
-        raise ValueError(f"{path}: JSON-Liste erwartet.")
+        raise ValueError(f"{path}: Expected a JSON array.")
     return value
 
 
 def require_text(value, path):
     if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{path}: Nichtleerer Text erwartet.")
+        raise ValueError(f"{path}: Expected a non-empty string.")
     return value
 
 
@@ -106,11 +106,11 @@ class Draft:
         source_id = data.get("id")
         if "id" in data:
             if type(source_id) not in (str, int) or not str(source_id).strip():
-                raise ValueError(f"{path}/id: Nichtleere ID oder Ganzzahl erwartet.")
+                raise ValueError(f"{path}/id: Expected a non-empty string or an integer.")
             source_id = str(source_id)
             if source_id in self.id_paths:
                 self.issues.append({
-                    "path": path, "message": "Quell-ID mehrfach vorhanden.",
+                    "path": path, "message": "This source ID appears more than once.",
                     "other_path": self.id_paths[source_id],
                 })
             else:
@@ -121,7 +121,7 @@ class Draft:
             "stopAndError",
             {"errorMessage": DRAFT_WARNING},
             (column * 320, lane * 220),
-            f"{DRAFT_WARNING}\nVorschlag: {hint}",
+            f"{DRAFT_WARNING}\nSuggested node: {hint}",
         )
         self.modules.append({
             "node": name,
@@ -144,7 +144,7 @@ class Draft:
 
     def artifacts(self):
         workflow = {
-            "name": f"{self.source.capitalize()} zu n8n · Entwurf", "active": False,
+            "name": f"{self.source.capitalize()} to n8n · Draft", "active": False,
             "nodes": self.nodes, "connections": self.connections, "settings": {},
         }
         report = {
@@ -160,7 +160,7 @@ def make_flow(draft, flow, path, previous, column, lane, edge_kind="sequence"):
     entries = require_list(flow, path)
     next_lane = lane + 1
     if not entries:
-        draft.issues.append({"path": path, "message": "Leerer Pfad. Im Original prüfen."})
+        draft.issues.append({"path": path, "message": "Check this empty path in the source workflow."})
 
     for index, entry in enumerate(entries):
         location = child_path(path, index)
@@ -175,7 +175,7 @@ def make_flow(draft, flow, path, previous, column, lane, edge_kind="sequence"):
         draft.link(previous, current, edge_kind if index == 0 else "sequence", location)
         if module.get("filter"):
             draft.issues.append({
-                "path": f"{location}/filter", "message": "Bedingungen in n8n nachbauen.",
+                "path": f"{location}/filter", "message": "Recreate these conditions in n8n.",
             })
 
         routes = require_list(module.get("routes", []), f"{location}/routes")
@@ -185,7 +185,7 @@ def make_flow(draft, flow, path, previous, column, lane, edge_kind="sequence"):
             settings = {key: value for key, value in route.items() if key != "flow"}
             draft.issues.append({
                 "path": route_path,
-                "message": "Filter, Auswertungsreihenfolge und Fallback der Route prüfen.",
+                "message": "Check the route filter, evaluation order, and fallback behavior.",
                 "fields": list(inventory(settings, route_path, "make")),
             })
             next_lane = make_flow(draft, route.get("flow"), f"{route_path}/flow",
@@ -193,7 +193,7 @@ def make_flow(draft, flow, path, previous, column, lane, edge_kind="sequence"):
         if routes and index + 1 < len(entries):
             draft.issues.append({
                 "path": location,
-                "message": "Schritt nach Router erkannt. Fortsetzung und Reihenfolge manuell prüfen.",
+                "message": "Check how execution continues after this router and in which order.",
             })
 
         if module.get("onerror") is not None:
@@ -202,7 +202,7 @@ def make_flow(draft, flow, path, previous, column, lane, edge_kind="sequence"):
             if isinstance(error_flow, dict) and "flow" in error_flow:
                 error_flow, error_path = error_flow["flow"], f"{error_path}/flow"
             draft.issues.append({
-                "path": error_path, "message": "Fehlerpfad in n8n separat verdrahten.",
+                "path": error_path, "message": "Connect this error path in n8n.",
             })
             next_lane = make_flow(draft, error_flow, error_path, current,
                                   column + 1, next_lane, "error")
@@ -218,35 +218,35 @@ def from_make(draft, data):
         blueprint = parse_json(blueprint)
     blueprint = require_object(blueprint, prefix or "/")
     if not require_list(blueprint.get("flow"), f"{prefix}/flow"):
-        raise ValueError(f"{prefix}/flow: Mindestens ein Make-Modul erforderlich.")
+        raise ValueError(f"{prefix}/flow: Expected at least one Make module.")
     for key in ("scheduling", "schedule", "metadata"):
         if key in blueprint:
             draft.issues.append({
                 "path": f"{prefix}/{key}",
-                "message": "Zeitplan und Szenarioeinstellungen anhand des Originals prüfen.",
+                "message": "Check the schedule and scenario settings against the source.",
             })
     make_flow(draft, blueprint["flow"], f"{prefix}/flow", START_NODE, 0, 0)
 
 
 def from_zapier(draft, data):
     if data.get("format") != "zapier-inventory-v1":
-        raise ValueError("Zapier: Inventar im Format zapier-inventory-v1 erforderlich. Siehe README.")
+        raise ValueError("Zapier requires a zapier-inventory-v1 file. See the README for an example.")
     if data.keys() - {"format", "steps"}:
-        raise ValueError("Zapier: Inventar unterstützt auf oberster Ebene nur format und steps.")
+        raise ValueError("The Zapier inventory supports only format and steps at the top level.")
     steps = require_list(data.get("steps"), "/steps")
     if not steps:
-        raise ValueError("/steps: Mindestens ein Zapier-Schritt erforderlich.")
+        raise ValueError("/steps: Expected at least one Zapier step.")
     previous = START_NODE
     for index, raw_step in enumerate(steps):
         path = f"/steps/{index}"
         step = require_object(raw_step, path)
         if step.keys() - {"id", "app", "event", "kind", "fields"}:
-            raise ValueError(f"{path}: Unbekannte Eigenschaften. Siehe Inventarschema im README.")
+            raise ValueError(f"{path}: Unknown properties. See the inventory format in the README.")
         app = require_text(step.get("app"), f"{path}/app")
         event = require_text(step.get("event"), f"{path}/event")
         kind = require_text(step.get("kind", "action"), f"{path}/kind").lower()
         if kind not in ZAPIER_HINTS.keys() | {"trigger", "action"}:
-            raise ValueError(f"{path}/kind: Schrittart im Inventarschema nachschlagen.")
+            raise ValueError(f"{path}/kind: Unknown step kind. See the inventory format in the README.")
         default_hint = "App-Trigger" if kind == "trigger" else "App-Node / HTTP Request"
         hint = ZAPIER_HINTS.get(kind, default_hint)
 
@@ -260,13 +260,13 @@ def from_zapier(draft, data):
 
 def parse_json(contents):
     def reject_constant(_):
-        raise ValueError("JSON-Zahlen müssen endlich sein.")
+        raise ValueError("JSON numbers must be finite.")
 
     return json.loads(contents, parse_constant=reject_constant)
 
 
 def write_artifacts(directory, artifacts):
-    names = ("workflow.n8n.json", "migrationsbericht.json")
+    names = ("workflow.n8n.json", "migration-report.json")
     payloads = [json.dumps(data, ensure_ascii=True, indent=2) + "\n" for data in artifacts]
     directory.mkdir()
     created = []
@@ -285,9 +285,9 @@ def write_artifacts(directory, artifacts):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input", type=Path, help="Make-Blueprint oder Zapier-Inventar als JSON")
+    parser.add_argument("input", type=Path, help="Make blueprint or Zapier inventory (JSON)")
     parser.add_argument("--source", choices=("make", "zapier"), default="make")
-    parser.add_argument("--out", type=Path, required=True, help="Neuer Ausgabeordner")
+    parser.add_argument("--out", type=Path, required=True, help="New directory for the output files")
     args = parser.parse_args()
     try:
         contents = args.input.read_text(encoding="utf-8-sig")
@@ -299,10 +299,10 @@ def main():
             from_zapier(draft, data)
         write_artifacts(args.out, draft.artifacts())
     except FileExistsError:
-        parser.exit(2, "Fehler: Ausgabeordner existiert bereits. Bitte einen neuen Namen wählen.\n")
+        parser.exit(2, "Error: The output directory already exists. Choose a new directory.\n")
     except (ValueError, OSError, RecursionError) as exc:
-        parser.exit(2, f"Fehler: {exc}\n")
-    print(f"{len(draft.modules)} Schritte erfasst. Entwurf und Bericht: {args.out}")
+        parser.exit(2, f"Error: {exc}\n")
+    print(f"Draft and report for {len(draft.modules)} step(s) written to {args.out}")
     return 0
 
 
